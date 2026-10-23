@@ -15,6 +15,7 @@ import unicodedata
 import urllib.request
 import webbrowser
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -39,6 +40,7 @@ CLASSES = {
 }
 
 _trava = threading.Lock()
+BRASILIA = timezone(timedelta(hours=-3))
 
 
 def baixar(url, tentativas=2):
@@ -222,7 +224,7 @@ def montar_dados():
     except Exception:
         pass
 
-    return {"atualizado_em": time.strftime("%d/%m/%Y %H:%M"), "carteira_id": wid,
+    return {"atualizado_em": datetime.now(BRASILIA).strftime("%d/%m/%Y %H:%M"), "carteira_id": wid,
             "dolar": dolar, "classes": classes}
 
 
