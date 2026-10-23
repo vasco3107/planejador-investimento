@@ -1,0 +1,55 @@
+name: Atualizar dados e publicar site
+
+on:
+  schedule:
+    # a cada 30 min no horário do pregão (10h às 18h de Brasília, seg a sex)
+    - cron: "*/30 13-21 * * 1-5"
+    # fora do pregão, a cada 6 h (cripto e dólar continuam mexendo)
+    - cron: "15 */6 * * *"
+    # semanal: commit vazio para o GitHub não desligar os agendamentos por inatividade
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Gerar dados da carteira
+        run: python servidor.py --gerar web/dados.json
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Manter agendamento ativo
+        if: github.event.schedule == '0 12 * * 1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "Manter agendamento ativo"
+          git push

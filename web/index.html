@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planejador de Aportes</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div class="topo-in">
+    <div>
+      <h1>Planejador de Aportes</h1>
+      <p class="sub" id="status">Carregando carteira…</p>
+    </div>
+    <button class="btn-sec" id="btnAtualizar" title="Buscar cotações e indicadores agora">Atualizar dados</button>
+  </div>
+</header>
+
+<main>
+  <section class="painel entrada">
+    <label class="campo-aporte">
+      <span>Quanto vou investir este mês</span>
+      <div class="input-moeda"><b>R$</b><input id="aporte" inputmode="decimal" placeholder="1.000,00" autocomplete="off"></div>
+    </label>
+    <button class="btn" id="btnCalcular">Calcular aporte</button>
+
+    <details class="ajustes">
+      <summary>Ajustes</summary>
+      <div class="ajustes-grid">
+        <label>Peso das oportunidades <output id="kOut">50%</output>
+          <input type="range" id="k" min="0" max="100" step="5" value="50">
+          <small>0% = só rebalanceia pela meta. 100% = puxa forte para os mais baratos e deixa uma oportunidade passar até 30% da meta.</small>
+        </label>
+        <label>Máximo de ativos por classe
+          <input type="number" id="maxAtivos" min="1" max="20" value="3">
+          <small>Concentra o aporte nos melhores, em vez de comprar 1 cota de cada.</small>
+        </label>
+        <label>Valor mínimo por classe (R$)
+          <input type="number" id="minimo" min="0" step="10" value="50">
+          <small>Abaixo disso a classe fica de fora e o valor vai para as outras.</small>
+        </label>
+        <div>
+          <span class="rotulo">Classes que entram neste aporte</span>
+          <div id="classesOn" class="chips"></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="painel" id="oportunidades" hidden>
+    <h2>Oportunidades agora</h2>
+    <div id="dolarBox" class="dolar"></div>
+    <div id="opLista" class="op-lista"></div>
+  </section>
+
+  <section id="resultado" hidden>
+    <div class="painel resumo" id="resumo"></div>
+    <div id="classes"></div>
+  </section>
+
+  <p class="aviso">Calculadora baseada nas metas que você definiu no Investidor10 e em indicadores públicos (Investidor10 e Yahoo Finance). Não é recomendação de investimento: confira preço e fundamentos antes de comprar.</p>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
