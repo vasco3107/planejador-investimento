@@ -411,15 +411,50 @@ async function carregar(forcar) {
     const resp = await fetch(url, { cache: "no-store" });
     const j = await resp.json();
     if (j.erro) throw new Error(j.erro);
-    DADOS = j;
-    $("status").textContent = `Carteira ${j.carteira_id} · dados de ${j.atualizado_em}`;
-    montarChips();
-    executar();
+    aplicarDados(j);
   } catch (e) {
     $("status").innerHTML = `<span class="erro">Falha ao carregar: ${e.message}</span>`;
   } finally {
     $("btnAtualizar").disabled = $("btnCalcular").disabled = false;
   }
+}
+
+function aplicarDados(j) {
+  DADOS = j;
+  $("status").textContent = `Carteira ${j.carteira_id} · dados de ${j.atualizado_em}`;
+  montarChips();
+  executar();
+}
+
+// Na internet não há servidor: o botão abre o robô no GitHub para rodar na hora
+// e a página fica conferindo até o arquivo novo ser publicado.
+const WORKFLOW_URL = "https://github.com/vasco3107/planejador-investimento/actions/workflows/atualizar.yml";
+let espera = null;
+
+function atualizarOnline() {
+  window.open(WORKFLOW_URL, "_blank");
+  const antes = DADOS?.atualizado_em;
+  $("status").textContent =
+    'No GitHub, toque em "Run workflow" e confirme. Esta página atualiza sozinha quando os dados novos chegarem (1 a 2 min).';
+  clearInterval(espera);
+  let tentativas = 0;
+  const conferir = async () => {
+    tentativas++;
+    try {
+      const j = await fetch("dados.json?t=" + Date.now(), { cache: "no-store" }).then((r) => r.json());
+      if (j.atualizado_em !== antes) {
+        clearInterval(espera);
+        aplicarDados(j);
+        return;
+      }
+    } catch {}
+    if (tentativas >= 40) {
+      clearInterval(espera);
+      $("status").textContent = `Ainda sem dados novos · dados de ${antes}. Confira se o robô rodou no GitHub.`;
+    }
+  };
+  espera = setInterval(conferir, 15000);
+  document.addEventListener("visibilitychange", () => !document.hidden && espera && conferir(), { once: true });
 }
 
 function montarChips() {
@@ -448,6 +483,6 @@ $("k").addEventListener("input", () => {
 });
 $("maxAtivos").addEventListener("change", executar);
 $("minimo").addEventListener("change", executar);
-$("btnAtualizar").addEventListener("click", () => carregar(true));
+$("btnAtualizar").addEventListener("click", () => (LOCAL ? carregar(true) : atualizarOnline()));
 
 carregar(false);

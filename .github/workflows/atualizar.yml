@@ -2,12 +2,13 @@ name: Atualizar dados e publicar site
 
 on:
   schedule:
-    # a cada 30 min no horário do pregão (10h às 18h de Brasília, seg a sex)
-    - cron: "*/30 13-21 * * 1-5"
+    # a cada 30 min no horário do pregão (10h às 18h de Brasília, seg a sex);
+    # minutos "quebrados" porque o GitHub descarta muito agendamento em :00 e :30
+    - cron: "7,37 13-21 * * 1-5"
     # fora do pregão, a cada 6 h (cripto e dólar continuam mexendo)
-    - cron: "15 */6 * * *"
+    - cron: "23 */6 * * *"
     # semanal: commit vazio para o GitHub não desligar os agendamentos por inatividade
-    - cron: "0 12 * * 1"
+    - cron: "41 12 * * 1"
   workflow_dispatch:
   push:
     branches: [main]
@@ -47,7 +48,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Manter agendamento ativo
-        if: github.event.schedule == '0 12 * * 1'
+        if: github.event.schedule == '41 12 * * 1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
